@@ -144,10 +144,12 @@ void StartBlinkLEDTask(void *argument) {
   /* Infinite loop */
   for(;;)
   {
-    if (xTaskGetTickCount() - last_time > 1000) {
-      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-      last_time = xTaskGetTickCount();
-    }
+    // if (xTaskGetTickCount() - last_time > 1000) {
+    //   HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    //   last_time = xTaskGetTickCount();
+    // }
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
