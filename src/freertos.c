@@ -49,7 +49,7 @@
 #include <rmw_microxrcedds_c/config.h>
 #include <rmw_microros/rmw_microros.h>
 #include <rosidl_runtime_c/primitives_sequence_functions.h>
-#include <branch_detection_interfaces/msg/vl53l8cx8x8.h>
+#include <vl53l8cx_msgs/msg/vl53l8cx8x8.h>
 
 // custom microROS includes
 #include "freertos.h"
@@ -63,6 +63,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticSemaphore_t osStaticMutexDef_t;
 
 extern UART_HandleTypeDef huart2;
+
+extern volatile bool vl53l8cx_data_ready;
 
 /* Definitions for blinkLED */
 osThreadId_t blinkLEDHandle;
@@ -110,7 +112,7 @@ const osMutexAttr_t vl53l8cxMsgMutex_attributes = {
 };
 
 /* Create message */
-branch_detection_interfaces__msg__Vl53l8cx8x8 msg;
+vl53l8cx_msgs__msg__Vl53l8cx8x8 msg;
 
 
 void MX_FREERTOS_Init() {
@@ -194,7 +196,7 @@ void StartmicroROSTask(void* argument) {
 
   os_status = osMutexAcquire(vl53l8cxMsgMutexHandle, osWaitForever);
   // Init message
-  if (!branch_detection_interfaces__msg__Vl53l8cx8x8__init(&msg)) {
+  if (!vl53l8cx_msgs__msg__Vl53l8cx8x8__init(&msg)) {
     Error_Handler();
   };
   msg.data.capacity = 64;
@@ -285,20 +287,30 @@ void StartVL53L8CXRanging(void *argument)
   }
 
   /* Infinite loop */
-  for(;;) {
-    sensor_status = vl53l8cx_check_data_ready(&dev_, &data_ready);
-    if(data_ready){
+  for(;;) { // TODO: change to interrupt
+    // sensor_status = vl53l8cx_check_data_ready(&dev_, &data_ready);
+    // if(data_ready){
+    //   sensor_status = vl53l8cx_get_resolution(&dev_, &resolution_);
+    //   sensor_status = vl53l8cx_get_ranging_data(&dev_, &results_);
+    
+    //   os_status = osMutexAcquire(vl53l8cxMsgMutexHandle, osWaitForever);
+    //   for (uint32_t i=0; i<64; ++i){
+    //     msg.data.data[i] = results_.distance_mm[i];
+    //   }
+
+    //   os_status = osMutexRelease(vl53l8cxMsgMutexHandle);
+    // }
+
+    if (vl53l8cx_data_ready) {
       sensor_status = vl53l8cx_get_resolution(&dev_, &resolution_);
       sensor_status = vl53l8cx_get_ranging_data(&dev_, &results_);
-    
 
       os_status = osMutexAcquire(vl53l8cxMsgMutexHandle, osWaitForever);
-      for (uint32_t i=0; i<64; ++i){
+      for (uint32_t i=0; i<64; ++i){ // TODO: change to pointers? Is this worth it?
         msg.data.data[i] = results_.distance_mm[i];
       }
-      
-
       os_status = osMutexRelease(vl53l8cxMsgMutexHandle);
+      vl53l8cx_data_ready = false;
     }
   }
   /* USER CODE END StartVL53L8CXRanging */

@@ -1,6 +1,6 @@
 #include "main.h"
 #include "rcl_utils.h"
-#include <branch_detection_interfaces/msg/vl53l8cx8x8.h>
+#include <vl53l8cx_msgs/msg/vl53l8cx8x8.h>
 #include <std_msgs/msg/int32.h>
 
 
@@ -31,7 +31,7 @@ bool create_rcl_entities(
   status = rclc_publisher_init_default(
     p_publisher,
     p_node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(branch_detection_interfaces, msg, Vl53l8cx8x8),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(vl53l8cx_msgs, msg, Vl53l8cx8x8),
     "vl53l8cx/distance" // topic
   );
   // status = rclc_publisher_init_default(
